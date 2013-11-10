@@ -1,0 +1,66 @@
+# Linux
+*~
+
+# Python
+*.py[cod]
+
+# C extensions
+*.so
+
+# VirtualEnvs
+/.venv*
+
+# Packages
+*.egg
+*.egg-info
+/dist
+/build
+/eggs
+/parts
+/bin
+/var
+/sdist
+develop-eggs
+.installed.cfg
+/lib
+/lib64
+__pycache__
+.cache
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+.ropeproject
+
+# Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# PyCharm
+/.idea
+
+# Ply
+parser.out
+parsetab.py
