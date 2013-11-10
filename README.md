@@ -3,6 +3,9 @@
 Because json-based queries are not for humans.
 
 
+[![Build Status](https://travis-ci.org/rshk/MongoSQL.png)](https://travis-ci.org/rshk/MongoSQL)
+
+
 ## Usage
 
 First, prepare a database with some data:
