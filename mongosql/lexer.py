@@ -10,20 +10,6 @@ import ply.lex as lex
 tokens = [
     'COMMENT',  # Comments --.*
 
-    ## Parenthesis, braces and brackets
-    'LBRACE',
-    'RBRACE',
-    'LBRACKET',
-    'RBRACKET',
-    'LPAREN',
-    'RPAREN',
-
-    ## Fixed symbols
-    'EQUAL',
-    'COLON',
-    'COMMA',
-    'STAR',
-
     ## Base types
     'STRING',
     'INTEGER',
@@ -35,6 +21,8 @@ tokens = [
 ]
 
 ## Order matters!
+## Literal symbols, for stuff like operators
+## and parentheses.
 token_symbols = [
     ('LBRACE', '{'),
     ('RBRACE', '}'),
@@ -57,7 +45,7 @@ token_symbols = [
     ('PERCENT', '%'),  # operator
     ('PLUS', '+'),  # operator
     ('SLASH', '/'),  # operator
-    ('STAR', '*'),  # operator
+    ('STAR', '*'),  # operator, wildcard
 ]
 
 
@@ -71,6 +59,7 @@ reserved = [
     ## Used for "normal" queries -> applied on a connection
     'SELECT',
     'FROM',
+    'WHERE',
 
     ## For naming stuff
     'AS',
@@ -79,6 +68,9 @@ reserved = [
     'AND',
     'OR',
     'NOT',
+
+    ## Named operators
+    'IN',
 
     ## Sorting constants
     'ASC',
@@ -118,17 +110,6 @@ def t_COMMENT(t):
 ##------------------------------------------------------------
 ## Simple tokens
 ##------------------------------------------------------------
-
-# t_LBRACE = r'\{'
-# t_RBRACE = r'\}'
-# t_LBRACKET = r'\['
-# t_RBRACKET = r'\]'
-# t_LPAREN = r'\('
-# t_RPAREN = r'\)'
-# t_EQUAL = r'='
-# t_COLON = r':'
-# t_COMMA = r','
-# t_STAR = r'\*'
 
 # Symbols can have dots
 symbol_part = r'([a-zA-Z_][a-zA-Z0-9_]*)'
