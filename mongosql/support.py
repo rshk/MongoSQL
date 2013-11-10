@@ -121,9 +121,10 @@ class Comparison(OperationBase):
         # If the first one is a symbol, we're ok
         # Else, not sure on how to handle this..
         if isinstance(self.first, Symbol):
-            return {
-                to_mongo(self.first): {
-                    self._get_operator(): to_mongo(self.second)}}
+            op = self._get_operator()
+            if op == '$eq':
+                return {to_mongo(self.first): to_mongo(self.second)}
+            return {to_mongo(self.first): {op: to_mongo(self.second)}}
         raise NotImplementedError("What should I do?")
 
 

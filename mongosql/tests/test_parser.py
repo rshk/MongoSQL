@@ -10,12 +10,12 @@ def test_simple_parsing():
     assert parsed.collection == 'mycollection'
     assert parsed.fields is None
     assert isinstance(parsed.query, Comparison)
-    assert parsed.query.to_mongo() == {'field': {'$eq': 'value'}}
+    assert parsed.query.to_mongo() == {'field': 'value'}
 
     class FakeCollection(object):
         def find(self, **kwargs):
             assert kwargs.keys() == ['spec']
-            assert kwargs['spec'] == {'field': {'$eq': 'value'}}
+            assert kwargs['spec'] == {'field': 'value'}
 
     parsed.apply({'mycollection': FakeCollection()})
     pass
@@ -37,7 +37,7 @@ def test_parsing_all_parts():
     assert parsed.fields == ['field', 'field1', 'field2']
 
     assert isinstance(parsed.query, Comparison)
-    assert parsed.query.to_mongo() == {'field': {'$eq': 'value'}}
+    assert parsed.query.to_mongo() == {'field': 'value'}
 
     assert parsed.limit == 100
     assert parsed.skip == 20
@@ -47,7 +47,7 @@ def test_parsing_all_parts():
         def find(self, **kwargs):
             assert set(kwargs.keys()) == set((
                 'spec', 'fields', 'limit', 'skip', 'sort'))
-            assert kwargs['spec'] == {'field': {'$eq': 'value'}}
+            assert kwargs['spec'] == {'field': 'value'}
             assert kwargs['fields'] == ['field', 'field1', 'field2']
             assert kwargs['limit'] == 100
             assert kwargs['skip'] == 20

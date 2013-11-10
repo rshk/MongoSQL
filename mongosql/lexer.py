@@ -2,6 +2,7 @@
 Lexer for MongoSQL expressions
 """
 
+import os
 import re
 
 import ply.lex as lex
@@ -188,4 +189,5 @@ def t_NULL(t):
     return t
 
 
-lexer = lex.lex()
+debug = True if os.environ.get('MONGOSQL_DEBUG') else False
+lexer = lex.lex(debug=debug)

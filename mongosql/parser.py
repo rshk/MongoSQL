@@ -19,6 +19,8 @@ SORT {sort:SORT_LIST}
 
 """
 
+import os
+
 import ply.yacc as yacc
 
 from mongosql.lexer import lexer, tokens  # NOQA
@@ -260,4 +262,5 @@ def p_string(p):
     p[0] = p[1][1:-1]  # todo: replace escapes
 
 
-parser = yacc.yacc(debug=True)
+debug = True if os.environ.get('MONGOSQL_DEBUG') else False
+parser = yacc.yacc(debug=debug)
