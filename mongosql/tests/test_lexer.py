@@ -33,6 +33,7 @@ def test_lexer_simple():
         ('RPAREN', ')'),
         ('SEMICOLON', ';'),
     ]
+    assert len(data) == len(expected)
     for i, (typ, val) in enumerate(expected):
         assert data[i].type == typ
         assert data[i].value == val
