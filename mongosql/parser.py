@@ -208,17 +208,17 @@ def p_fields_spec_names(p):
 
 def p_sort_direction_default(p):
     """sort_direction :"""
-    return 1
+    p[0] = 1
 
 
 def p_sort_direction_asc(p):
     """sort_direction : ASC"""
-    return 1
+    p[0] = 1
 
 
 def p_sort_direction_desc(p):
     """sort_direction : DESC"""
-    return -1
+    p[0] = -1
 
 
 def p_sort_spec_item(p):
