@@ -61,6 +61,7 @@ reserved = [
     'SELECT',
     'FROM',
     'WHERE',
+    'BY',
 
     ## For naming stuff
     'AS',
@@ -78,6 +79,7 @@ reserved = [
     'DESC',
 
     ## We use mongodb terminology here!
+    'AGGREGATE',
     'PROJECT',
     'MATCH',
     'LIMIT',

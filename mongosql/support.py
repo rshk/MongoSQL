@@ -2,11 +2,13 @@
 Support objects for MongoSQL
 """
 
+import copy
+
 
 def to_mongo(obj):
     if hasattr(obj, 'to_mongo'):
         return obj.to_mongo()
-    return obj
+    return copy.deepcopy(obj)
 
 
 class DatabaseOperation(object):
@@ -41,6 +43,43 @@ class SelectOperation(DatabaseOperation):
         return db[self.collection].find(**kwargs)
 
 
+class AggregateOperation(DatabaseOperation):
+    """Aggregation framework: DB operation wrapper"""
+
+    def __init__(self, collection):
+        self.collection = collection
+        self.pipeline = []
+
+    def apply(self, db):
+        return db[self.collection].aggregate(
+            self._get_pipeline_to_mongo())
+
+    def _get_pipeline_to_mongo(self):
+        return [to_mongo(i) for i in self.pipeline]
+
+    def to_mongo(self):
+        return {
+            'aggregate': self.collection,
+            'pipeline': self._get_pipeline_to_mongo(),
+        }
+
+
+class AggregateCmdProject(object):
+    """Aggregation framework: $project command"""
+
+    def __init__(self, args):
+        self._args = args
+
+    def to_mongo(self):
+        ## Named expressions are just squashed in the same dict.
+        ## Any previously defined project: will be overridden.
+        ## todo: should we merge instead?
+        projection = dict(
+            (to_mongo(item.name), to_mongo(item.expression))
+            for item in self._args)
+        return {'$project': projection}
+
+
 class Symbol(object):
     """Used to represent generic symbols"""
 
@@ -48,23 +87,22 @@ class Symbol(object):
         self.name = name
 
     def to_mongo(self):
-        return self.name  # used as-is..
+        return self.name  # Name is used as-is..
 
 
-class FunctionCall(object):
-    def __init__(self, function, args):
-        self.function = function
-        self.args = args
+class Map(dict):
+    """Wrapper around dict, allowing to_mongo() serialization"""
 
     def to_mongo(self):
-        return {
-            '${0}'.format(self.function): [
-                to_mongo(a) for a in self.args
-            ]
-        }
+        return dict((key, to_mongo(val)) for key, val in self.iteritems())
 
 
-class NamedExpression(object):
+class Expression(object):
+    """Common base for expressions"""
+    pass
+
+
+class NamedExpression(Expression):
     def __init__(self, name, expression):
         self.name = name
         assert isinstance(self.name, basestring)
@@ -72,10 +110,6 @@ class NamedExpression(object):
 
     def to_mongo(self):
         return {self.name: to_mongo(self.expression)}
-
-
-class Expression(object):
-    pass
 
 
 class OperationBase(Expression):
@@ -128,11 +162,32 @@ class Comparison(OperationBase):
         raise NotImplementedError("What should I do?")
 
 
-class LogicalOperation(OperationBase):
-    operator_names = {
-        'AND': '$and',
-        'OR': '$or',
-    }
+class LogicalOperationBase(OperationBase):
+    def __init__(self, *expressions):
+        self._expressions = []
+        for expr in expressions:
+            self.append(expr)
+
+    def append(self, expr):
+        if isinstance(expr, self.__class__):
+            ## We should merge this one.
+            for e in expr._expressions:
+                self.append(e)
+
+    def __repr__(self):
+        return "{0}({1})".format(
+            self.__class__.__name__,
+            ', '.join(repr(x) for x in self._expressions))
+
+
+class LogicalAnd(LogicalOperationBase):
+    def to_mongo(self):
+        return {'$and': copy.deepcopy(self.expressions)}
+
+
+class LogicalOr(LogicalOperationBase):
+    def to_mongo(self):
+        return {'$or': copy.deepcopy(self.expressions)}
 
 
 class LogicalNot(object):
@@ -141,3 +196,33 @@ class LogicalNot(object):
 
     def to_mongo(self):
         return {'$not': to_mongo(self.expression)}
+
+    def __repr__(self):
+        return "{0}({1})".format(
+            self.__class__.__name__,
+            repr(self.expression))
+
+
+class FunctionCall(Expression):
+    """
+    Wrapper for function calls.
+    This is kinda delicate, but should work..
+
+    func(a, b, c) -> {'$func': [a, b, c]}
+    """
+
+    def __init__(self, function, args):
+        self.function = function
+        self.args = args
+
+    def to_mongo(self):
+        return {
+            '${0}'.format(self.function): [
+                to_mongo(a) for a in self.args
+            ]
+        }
+
+    def __repr__(self):
+        return "{0}({1})".format(
+            self.function,
+            ', '.join(repr(x) for x in self.args))

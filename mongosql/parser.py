@@ -20,16 +20,27 @@ SORT {sort:SORT_LIST}
 """
 
 import os
+from collections import namedtuple
 
 import ply.yacc as yacc
 
 from mongosql.lexer import lexer, tokens  # NOQA
-from mongosql.support import Symbol, SelectOperation, Expression, \
-    Operation, Comparison, LogicalOperation, LogicalNot
+from mongosql.support import (
+    Symbol, Map, SelectOperation, Expression, Operation, Comparison,
+    LogicalAnd, LogicalOr, LogicalNot, FunctionCall, AggregateOperation,
+    AggregateCmdProject)
+
+
+def p_error(p):
+    raise Exception("Parser error!", p)
+
+named_expression = namedtuple('named_expression', ('name', 'expression'))
 
 
 ##----------------------------------------------------------------------------
 ## Statements
+## This must be on top, as it works as the "base" for the parsing
+## grammar.
 ##----------------------------------------------------------------------------
 
 
@@ -42,7 +53,10 @@ def p_statement(p):
 
 
 def p_operation(p):
-    """operation : operation_select"""
+    """
+    operation : operation_select
+              | operation_aggregate
+    """
     p[0] = p[1]
 
 
@@ -97,18 +111,37 @@ def p_expression_comparison(p):
     p[0] = Comparison(first=p[1], operator=p[2], second=p[3])
 
 
-def p_expression_logical(p):
-    """
-    expression : expression AND expression
-               | expression OR expression
-    """
-    p[0] = LogicalOperation(first=p[1], operator=p[2], second=p[3])
+def p_expression_logical_and(p):
+    """expression : expression AND expression"""
+    p[0] = LogicalAnd(p[1], p[3])
+
+
+def p_expression_logical_or(p):
+    """expression : expression OR expression"""
+    p[0] = LogicalOr(p[1], p[3])
 
 
 def p_expression_not(p):
     """expression : NOT expression"""
     p[0] = LogicalNot(p[1])
 
+
+##----------------------------------------------------------------------------
+## Function call
+##----------------------------------------------------------------------------
+
+def p_expression_call(p):
+    """
+    expression : SYMBOL LPAREN expression_list RPAREN
+               | SYMBOL LPAREN RPAREN
+    """
+    args = p[3] if (len(p) == 5) else []
+    p[0] = FunctionCall(p[1], args)
+
+
+##----------------------------------------------------------------------------
+## Expression lists
+##----------------------------------------------------------------------------
 
 def p_expression_list_one(p):
     """expression_list : expression"""
@@ -122,18 +155,54 @@ def p_expression_list(p):
 
 
 ##----------------------------------------------------------------------------
-## List of symbols
+## Named espressions:
+##
+##     name = expression
+##     expression AS name
 ##----------------------------------------------------------------------------
 
-def p_symbol_list_one(p):
-    """symbol_list : SYMBOL"""
+def p_named_expression_as(p):
+    """named_expression : expression AS SYMBOL"""
+    p[0] = named_expression(p[3], p[1])
+
+
+def p_named_expression(p):
+    """named_expression : SYMBOL EQUAL expression"""
+    p[0] = named_expression(p[1], p[3])
+
+
+def p_named_expression_list_one(p):
+    """named_expression_list : named_expression"""
+    assert isinstance(p[1], named_expression)
     p[0] = [p[1]]
 
 
-def p_symbol_list(p):
-    """symbol_list : symbol_list COMMA SYMBOL"""
+def p_named_expression_list(p):
+    """named_expression_list : named_expression_list COMMA named_expression"""
+    assert isinstance(p[3], named_expression)
     p[0] = p[1]
-    p[1].append(p[3])
+    p[0].append(p[3])
+
+
+##----------------------------------------------------------------------------
+## Aggregation framework
+##----------------------------------------------------------------------------
+
+def p_operation_aggregate(p):
+    """
+    operation_aggregate : AGGREGATE SYMBOL
+    """
+    assert isinstance(p[2], basestring)
+    p[0] = AggregateOperation(collection=p[2])
+
+
+def p_operation_aggregate_project(p):
+    """
+    operation_aggregate : operation_aggregate PROJECT named_expression_list
+    """
+    assert all(isinstance(x, named_expression) for x in p[3])
+    p[0] = p[1]
+    p[0].pipeline.append(AggregateCmdProject(p[3]))
 
 
 ##----------------------------------------------------------------------------
@@ -203,6 +272,21 @@ def p_fields_spec_names(p):
 
 
 ##----------------------------------------------------------------------------
+## List of symbols
+##----------------------------------------------------------------------------
+
+def p_symbol_list_one(p):
+    """symbol_list : SYMBOL"""
+    p[0] = [p[1]]
+
+
+def p_symbol_list(p):
+    """symbol_list : symbol_list COMMA SYMBOL"""
+    p[0] = p[1]
+    p[1].append(p[3])
+
+
+##----------------------------------------------------------------------------
 ## Sort specification
 ## field, field1 ASC, field2 DESC
 ## -> [(field, 1), (field1, 1), (field2, -1)]
@@ -251,6 +335,7 @@ def p_base_type(p):
               | TRUE
               | FALSE
               | NULL
+              | map
     """
     p[0] = p[1]
 
@@ -260,6 +345,19 @@ def p_string(p):
     assert p[1][0] == p[1][-1]
     assert p[1][0] in '\'"'
     p[0] = p[1][1:-1]  # todo: replace escapes
+
+
+def p_map_empty(p):
+    """map : LBRACE RBRACE"""
+    p[0] = Map()
+
+
+def p_map(p):
+    """
+    map : LBRACE named_expression_list RBRACE
+        | LBRACE named_expression_list COMMA RBRACE
+    """
+    p[0] = Map((i.name, i.expression) for i in p[2])
 
 
 debug = True if os.environ.get('MONGOSQL_DEBUG') else False
