@@ -15,13 +15,8 @@ import pymongo
 conn = pymongo.MongoClient('mongodb://localhost:27017')
 db = conn.testdb
 
-db.mycollection.save({'hello': 'Hello, World'})
-db.mycollection.save({'hello': 'Hello, Spam'})
-db.mycollection.save({'hello': 'Hello, Eggs'})
-db.mycollection.save({'hello': 'Hello, Bacon'})
-db.mycollection.save({'hello': 'Hello, Spam'})
-db.mycollection.save({'hello': 'Hello, Spam'})
-db.mycollection.save({'hello': 'Hello, Spam'})
+for item in 'World Spam Eggs Bacon Spam Spam Spam'.split():
+	db.mycollection.save({'hello': 'Hello, {0}'.format(item)})
 ```
 
 Then, we'll create a query:
@@ -36,32 +31,31 @@ for item in data:
 	print item
 ```
 ```
-{u'_id': ObjectId('527fe4a55bec3c3a494f8a84'), u'hello': u'Hello, World'}
-{u'_id': ObjectId('527fe4ac5bec3c3a494f8a85'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('527fe4af5bec3c3a494f8a86'), u'hello': u'Hello, Eggs'}
-{u'_id': ObjectId('527fe4b25bec3c3a494f8a87'), u'hello': u'Hello, Bacon'}
-{u'_id': ObjectId('527fe4b45bec3c3a494f8a88'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('527fe4b55bec3c3a494f8a89'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('527fe4b55bec3c3a494f8a8a'), u'hello': u'Hello, Spam'}
+{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}
+{u'_id': ObjectId('00112233445566778899AA01'), u'hello': u'Hello, Spam'}
+{u'_id': ObjectId('00112233445566778899AA02'), u'hello': u'Hello, Eggs'}
+{u'_id': ObjectId('00112233445566778899AA03'), u'hello': u'Hello, Bacon'}
+{u'_id': ObjectId('00112233445566778899AA04'), u'hello': u'Hello, Spam'}
+{u'_id': ObjectId('00112233445566778899AA05'), u'hello': u'Hello, Spam'}
+{u'_id': ObjectId('00112233445566778899AA06'), u'hello': u'Hello, Spam'}
 ```
 
-...yay!
+..yay!
 
 Let's try with something more complex:
 
 ```python
-q = parse('SELECT * FROM mycollection WHERE hello == "Hello, World"')
-data = q.apply(db)
+>>> q = parse('SELECT * FROM mycollection WHERE hello == "Hello, World"')
+>>> data = q.apply(db)
 
-for item in data:
-	print item
-```
-```
-{u'_id': ObjectId('527fe4a55bec3c3a494f8a84'), u'hello': u'Hello, World'}
+>>> for item in data:
+...     print item
+
+{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}
 ```
 
 
-## Examples
+## Example: search
 
 ```sql
 SELECT field, field1, field2
@@ -71,8 +65,41 @@ LIMIT 100 SKIP 20
 SORT field1 ASC, field2 DESC
 ```
 
-More coming soon..
+Becomes:
 
-**Note:** The SQL we're using here is somehow specific to MongoDB.
-For example, uses ``SORT`` instead of ``ORDER BY``, and the equality
-comparison operator is ``==`` instead of ``=``.
+```python
+db['mycollection'].find(
+	{'field': 'value'},
+	fields=['field', 'field1', 'field2'],
+	limit=100,
+	skip=20,
+	sort={'field1': 1, 'field2': -1})
+```
+
+
+## Example: projection framework
+
+```sql
+AGGREGATE article
+PROJECT title = 1,
+        stats = {
+            pv = '$pageViews',
+            foo = '$other.foo',
+            dpv = '$pageViews' + 10,
+        }
+```
+
+Becomes:
+
+```python
+db.article.aggregate([
+    {'$project': {
+        'title': 1,
+        'stats': {
+            'pv': "$pageViews",
+            'foo': "$other.foo",
+            'dpv': {'$add': ["$pageViews", 10]}
+        },
+    }}
+])
+```
