@@ -36,17 +36,21 @@ def p_error(p):
 
 
 ## Precedence rules
+## todo: we need to handle unary minus!
 precedence = (
-    ('left', 'AND', 'OR'),
+    ('left', 'COMMA'),
     ('left', 'EQUAL'),
-    ('left', 'NE', 'DBLEQUAL', 'GT', 'GTE', 'LT', 'LTE'),
+    ('left', 'OR'),
+    ('left', 'AND'),
+    ('left', 'NE', 'DBLEQUAL'),
+    ('left', 'GT', 'GTE', 'LT', 'LTE'),
     ('left', 'SUM', 'SUBTRACT'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
-    ('right', 'NOT'),  # Unary NOT
+    ('right', 'NOT', 'UMINUS'),  # Unary operators
 )
 
 
-named_expression = namedtuple('named_expression', ('name', 'expression'))
+assignment = namedtuple('assignment', ('name', 'expression'))
 
 
 ##----------------------------------------------------------------------------
@@ -173,25 +177,25 @@ def p_expression_list(p):
 ##     expression AS name
 ##----------------------------------------------------------------------------
 
-def p_named_expression_as(p):
-    """named_expression : expression AS SYMBOL"""
-    p[0] = named_expression(p[3], p[1])
+def p_assignment_as(p):
+    """assignment : expression AS SYMBOL"""
+    p[0] = assignment(p[3], p[1])
 
 
-def p_named_expression(p):
-    """named_expression : SYMBOL EQUAL expression"""
-    p[0] = named_expression(p[1], p[3])
+def p_assignment(p):
+    """assignment : SYMBOL EQUAL expression"""
+    p[0] = assignment(p[1], p[3])
 
 
-def p_named_expression_list_one(p):
-    """named_expression_list : named_expression"""
-    assert isinstance(p[1], named_expression)
+def p_assignment_list_one(p):
+    """assignment_list : assignment"""
+    assert isinstance(p[1], assignment)
     p[0] = [p[1]]
 
 
-def p_named_expression_list(p):
-    """named_expression_list : named_expression_list COMMA named_expression"""
-    assert isinstance(p[3], named_expression)
+def p_assignment_list(p):
+    """assignment_list : assignment_list COMMA assignment"""
+    assert isinstance(p[3], assignment)
     p[0] = p[1]
     p[0].append(p[3])
 
@@ -210,9 +214,9 @@ def p_operation_aggregate(p):
 
 def p_operation_aggregate_project(p):
     """
-    operation_aggregate : operation_aggregate PROJECT named_expression_list
+    operation_aggregate : operation_aggregate PROJECT assignment_list
     """
-    assert all(isinstance(x, named_expression) for x in p[3])
+    assert all(isinstance(x, assignment) for x in p[3])
     p[0] = p[1]
     p[0].pipeline.append(AggregateCmdProject(p[3]))
 
@@ -342,14 +346,38 @@ def p_sort_spec_list(p):
 def p_base_type(p):
     """
     base_type : string
-              | INTEGER
-              | FLOAT
-              | TRUE
-              | FALSE
-              | NULL
+              | number
+              | boolean
               | map
+              | NULL
     """
     p[0] = p[1]
+
+
+def p_true(p):
+    """boolean : TRUE"""
+    p[0] = True
+
+
+def p_false(p):
+    """boolean : FALSE"""
+    p[0] = False
+
+
+def p_number(p):
+    """
+    number : INTEGER
+           | FLOAT
+    """
+    p[0] = p[1]
+
+
+def p_number_negative(p):
+    """
+    number : MINUS INTEGER  %prec UMINUS
+           | MINUS FLOAT    %prec UMINUS
+    """
+    p[0] = -p[1]
 
 
 def p_string(p):
@@ -366,8 +394,8 @@ def p_map_empty(p):
 
 def p_map(p):
     """
-    map : LBRACE named_expression_list RBRACE
-        | LBRACE named_expression_list COMMA RBRACE
+    map : LBRACE assignment_list RBRACE
+        | LBRACE assignment_list COMMA RBRACE
     """
     p[0] = Map((i.name, i.expression) for i in p[2])
 
