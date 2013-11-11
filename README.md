@@ -6,13 +6,32 @@ Because json-based queries are not for humans.
 [![Build Status](https://travis-ci.org/rshk/MongoSQL.png)](https://travis-ci.org/rshk/MongoSQL)
 
 
+## Package contents
+
+* A ``parse(query)`` function that can be used to parse SQL queries
+  and return objects that can then be used to perform actual queries.
+
+  For complete SQL commands, a ``DatabaseOperation`` object will be returned.
+  This object has an ``apply(db)`` name to apply the query on a database object
+  (``MongoClient`` instance).
+
+  For ``SELECT``s, a ``.query`` attribute is available, containing the query
+  that would be executed on MongoDB (try
+  ``parse('SELECT * FROM mytable WHERE one == "foo" and two == "bar"').query.to_mongo()``)
+
+* A ``MongoSqlClient``, that can be used as a normal ``MongoClient`` (from which
+  inherits), the only difference being returned databases has a ``.sql(query)`` method,
+  allowing to run SQL queries directly.
+
+
 ## Usage
 
 First, prepare a database with some data:
 
 ```python
-import pymongo
-conn = pymongo.MongoClient('mongodb://localhost:27017')
+from mongosql import MongoSqlClient
+
+conn = MongoSqlClient('mongodb://localhost:27017')
 db = conn.testdb
 
 for item in 'World Spam Eggs Bacon Spam Spam Spam'.split():
@@ -22,35 +41,25 @@ for item in 'World Spam Eggs Bacon Spam Spam Spam'.split():
 Then, we'll create a query:
 
 ```python
->>> from mongosql import parse
+>>> list(db.sql('SELECT * FROM mycollection'))
 
->>> q = parse('SELECT * FROM mycollection')
->>> data = q.apply(db)
-
->>> for item in data:
-...     print item
-
-{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}
-{u'_id': ObjectId('00112233445566778899AA01'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('00112233445566778899AA02'), u'hello': u'Hello, Eggs'}
-{u'_id': ObjectId('00112233445566778899AA03'), u'hello': u'Hello, Bacon'}
-{u'_id': ObjectId('00112233445566778899AA04'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('00112233445566778899AA05'), u'hello': u'Hello, Spam'}
-{u'_id': ObjectId('00112233445566778899AA06'), u'hello': u'Hello, Spam'}
+[{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'},
+{u'_id': ObjectId('00112233445566778899AA01'), u'hello': u'Hello, Spam'},
+{u'_id': ObjectId('00112233445566778899AA02'), u'hello': u'Hello, Eggs'},
+{u'_id': ObjectId('00112233445566778899AA03'), u'hello': u'Hello, Bacon'},
+{u'_id': ObjectId('00112233445566778899AA04'), u'hello': u'Hello, Spam'},
+{u'_id': ObjectId('00112233445566778899AA05'), u'hello': u'Hello, Spam'},
+{u'_id': ObjectId('00112233445566778899AA06'), u'hello': u'Hello, Spam'}]
 ```
 
-..yay!
+..yay! It worked!
 
 Let's try with something more complex:
 
 ```python
->>> q = parse('SELECT * FROM mycollection WHERE hello == "Hello, World"')
->>> data = q.apply(db)
+>>> list(db.sql('SELECT * FROM mycollection WHERE hello == "Hello, World"'))
 
->>> for item in data:
-...     print item
-
-{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}
+[{u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}]
 ```
 
 

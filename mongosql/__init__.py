@@ -1,10 +1,2 @@
-"""
-MongoSQL
-"""
-
-from mongosql.lexer import lexer
-from mongosql.parser import parser
-
-
-def parse(query):
-    return parser.parse(query, lexer=lexer)
+from mongosql.wrapper import parse
+from mongosql.client import MongoSqlClient
