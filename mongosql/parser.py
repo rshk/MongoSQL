@@ -34,6 +34,18 @@ from mongosql.support import (
 def p_error(p):
     raise Exception("Parser error!", p)
 
+
+## Precedence rules
+precedence = (
+    ('left', 'AND', 'OR'),
+    ('left', 'EQUAL'),
+    ('left', 'NE', 'DBLEQUAL', 'GT', 'GTE', 'LT', 'LTE'),
+    ('left', 'SUM', 'SUBTRACT'),
+    ('left', 'TIMES', 'DIVIDE', 'MODULO'),
+    ('right', 'NOT'),  # Unary NOT
+)
+
+
 named_expression = namedtuple('named_expression', ('name', 'expression'))
 
 
@@ -88,13 +100,28 @@ def p_expression_symbol(p):
     p[0] = Symbol(p[1])
 
 
+def p_expression_not(p):
+    """expression : NOT expression"""
+    p[0] = LogicalNot(p[1])
+
+
+def p_expression_logical_and(p):
+    """expression : expression AND expression"""
+    p[0] = LogicalAnd(p[1], p[3])
+
+
+def p_expression_logical_or(p):
+    """expression : expression OR expression"""
+    p[0] = LogicalOr(p[1], p[3])
+
+
 def p_expression_operation(p):
     """
-    expression : expression PLUS expression
-               | expression MINUS expression
-               | expression STAR expression
-               | expression SLASH expression
-               | expression PERCENT expression
+    expression : expression PLUS expression     %prec SUM
+               | expression MINUS expression    %prec SUBTRACT
+               | expression STAR expression     %prec TIMES
+               | expression SLASH expression    %prec DIVIDE
+               | expression PERCENT expression  %prec MODULO
     """
     p[0] = Operation(first=p[1], operator=p[2], second=p[3])
 
@@ -109,21 +136,6 @@ def p_expression_comparison(p):
                | expression NE expression
     """
     p[0] = Comparison(first=p[1], operator=p[2], second=p[3])
-
-
-def p_expression_logical_and(p):
-    """expression : expression AND expression"""
-    p[0] = LogicalAnd(p[1], p[3])
-
-
-def p_expression_logical_or(p):
-    """expression : expression OR expression"""
-    p[0] = LogicalOr(p[1], p[3])
-
-
-def p_expression_not(p):
-    """expression : NOT expression"""
-    p[0] = LogicalNot(p[1])
 
 
 ##----------------------------------------------------------------------------

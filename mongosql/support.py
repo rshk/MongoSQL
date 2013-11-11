@@ -173,6 +173,11 @@ class LogicalOperationBase(OperationBase):
             ## We should merge this one.
             for e in expr._expressions:
                 self.append(e)
+        else:
+            self._expressions.append(expr)
+
+    def _expressions_to_mongo(self):
+        return [to_mongo(e) for e in self._expressions]
 
     def __repr__(self):
         return "{0}({1})".format(
@@ -182,25 +187,25 @@ class LogicalOperationBase(OperationBase):
 
 class LogicalAnd(LogicalOperationBase):
     def to_mongo(self):
-        return {'$and': copy.deepcopy(self.expressions)}
+        return {'$and': self._expressions_to_mongo()}
 
 
 class LogicalOr(LogicalOperationBase):
     def to_mongo(self):
-        return {'$or': copy.deepcopy(self.expressions)}
+        return {'$or': self._expressions_to_mongo()}
 
 
 class LogicalNot(object):
     def __init__(self, expression):
-        self.expression = expression
+        self._expression = expression
 
     def to_mongo(self):
-        return {'$not': to_mongo(self.expression)}
+        return {'$not': to_mongo(self._expression)}
 
     def __repr__(self):
         return "{0}({1})".format(
             self.__class__.__name__,
-            repr(self.expression))
+            repr(self._expression))
 
 
 class FunctionCall(Expression):

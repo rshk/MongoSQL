@@ -1,11 +1,10 @@
-from mongosql.parser import parser
-from mongosql.lexer import lexer
+from mongosql import parse
 from mongosql.support import Comparison, SelectOperation
 
 
 def test_simple_parsing():
     query = "SELECT * FROM mycollection WHERE field == 'value'"
-    parsed = parser.parse(query, lexer=lexer)
+    parsed = parse(query)
     assert isinstance(parsed, SelectOperation)
     assert parsed.collection == 'mycollection'
     assert parsed.fields is None
@@ -29,7 +28,7 @@ def test_parsing_all_parts():
     LIMIT 100 SKIP 20
     SORT field1 ASC, field2 DESC
     """
-    parsed = parser.parse(query, lexer=lexer)
+    parsed = parse(query)
 
     assert isinstance(parsed, SelectOperation)
 
@@ -54,3 +53,18 @@ def test_parsing_all_parts():
             assert kwargs['sort'] == {'field1': 1, 'field2': -1}
 
     parsed.apply({'mycollection': FakeCollection()})
+
+
+def test_parsing_expressions():
+    res = parse('SELECT * FROM coll WHERE foo == "Spam" AND bar == "Eggs"')
+    # assert res.query.to_mongo() == {
+    #     'foo': 'Spam',
+    #     'bar': 'Eggs',
+    # }
+    assert res.query.to_mongo() == {
+        '$and': [
+            {'foo': 'Spam'},
+            {'bar': 'Eggs'},
+        ],
+    }
+    pass
