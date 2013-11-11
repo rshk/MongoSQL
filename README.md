@@ -103,3 +103,33 @@ db.article.aggregate([
     }}
 ])
 ```
+
+
+## Reasons behind this
+
+The reasons behind this project are:
+
+* Many times I need to run test queries on a MongoDB server, eg. to see
+  the status of the stored data, often with some aggregations / "GROUP BY".
+  And I hate having to write JSON inline in the CLI, with all the
+  (un)readability problems..
+
+* In any case, I find that JSON queries tend to become unreadable quite soon,
+  even in program code.
+
+  And I hate writing things like: ``{'$and': [cond1, cond2, ...]}``.
+
+  And I think that [polish notation][polish-notation] tends to beacame easily
+  hard to follow, too:
+
+  compare ``(5 - 6) * 7`` with ``* - 5 6 7`` (polish notation),
+  ``(* (- 5 6) 7)`` (lisp) or, worse of 'em all, the mongodb way:
+  ``{'$multiply': [{'$subtract': [5, 6]}, 7]}``...
+
+[polish-notation]: http://en.wikipedia.org/wiki/Polish_notation
+
+
+## Reasons NOT behind this
+
+The goal of this project is **not** to use MongoDB as a drop-in, web-scale
+replacement for MySQL, to make your cats blog run the speed of light.
