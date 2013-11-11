@@ -50,7 +50,10 @@ token_symbols = [
 ]
 
 
-tokens.extend(x[0] for x in token_symbols)
+globs = globals()
+for tk, tkval in token_symbols:
+    tokens.append(tk)
+    globs['t_' + tk] = re.escape(tkval)
 
 
 reserved = [
@@ -107,6 +110,17 @@ def t_error(t):
     raise LexerError("Unknown text {0!r}".format(t.value,))
 
 
+##------------------------------------------------------------
+## Comments:
+##
+##   // C++ style
+##   #  Python style
+##   -- SQL style
+##   /* C style */
+##------------------------------------------------------------
+
+## Note: maybe we shouldn't waste that many tokens for comments..
+
 comment_cpp = r'//.*'
 comment_python = r'\#.*'
 comment_sql = r'--.*'
@@ -117,13 +131,6 @@ comment_c = r'/\*(.|\n)*?\*/'
 def t_COMMENT(t):
     # todo: how to support c-style multiline /* comments */ ?
     return None  # Just skip this token
-
-
-## We need to do this *after* declaring t_COMMENT
-## order matters in the lexer module...
-globs = globals()
-for tk, tkval in token_symbols:
-    globs['t_' + tk] = re.escape(tkval)
 
 
 ##------------------------------------------------------------
