@@ -8,11 +8,18 @@ python:
   - "2.7"
 
 env:
-  - TOXENV=py26
-  - TOXENV=py27
-  - TOXENV=py32
-  - TOXENV=py33
-  - TOXENV=pypy
+  global:
+    - MONGODB_URI=mongodb://localhost:27017
+
+  matrix:
+    - TOXENV=py26
+    - TOXENV=py27
+    - TOXENV=py32
+    - TOXENV=py33
+    - TOXENV=pypy
+
+services:
+  - mongodb
 
 install:
   - pip install tox --use-mirrors
