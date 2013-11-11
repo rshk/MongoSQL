@@ -61,6 +61,7 @@ reserved = [
     'SELECT',
     'FROM',
     'WHERE',
+    'ORDER',
     'BY',
 
     ## For naming stuff

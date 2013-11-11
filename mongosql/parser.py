@@ -269,8 +269,20 @@ def p_operation_select_skip(p):
     p[0].skip = p[3]
 
 
+def p_sort_keyword(p):
+    """
+    sort_keyword : SORT BY
+                 | SORT
+                 | ORDER BY
+                 | ORDER
+    """
+    p[0] = p[1]
+
+
 def p_operation_select_sort(p):
-    """operation_select : operation_select SORT sort_spec"""
+    """
+    operation_select : operation_select sort_keyword sort_spec
+    """
     p[0] = p[1]
     assert isinstance(p[0], SelectOperation)
     assert isinstance(p[3], (list, tuple))
