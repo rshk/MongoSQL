@@ -119,14 +119,13 @@ The reasons behind this project are:
 
   And I hate writing things like: ``{'$and': [cond1, cond2, ...]}``.
 
-  And I think that [polish notation][polish-notation] tends to beacame easily
-  hard to follow, too:
-
-  compare ``(5 - 6) * 7`` with ``* - 5 6 7`` (polish notation),
-  ``(* (- 5 6) 7)`` (lisp) or, worse of 'em all, the mongodb way:
+  And I think that [polish notation] tends to become
+  hard to follow quickly: compare, for example, ``(5 - 6) * 7``
+  with ``* - 5 6 7`` (polish notation), ``(* (- 5 6) 7)`` (lisp)
+  or, worse of them all, the mongodb way:
   ``{'$multiply': [{'$subtract': [5, 6]}, 7]}``...
 
-[polish-notation]: http://en.wikipedia.org/wiki/Polish_notation
+[polish notation]: http://en.wikipedia.org/wiki/Polish_notation
 
 
 ## Reasons NOT behind this
