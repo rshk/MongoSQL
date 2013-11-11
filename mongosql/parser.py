@@ -39,10 +39,11 @@ def p_error(p):
 ## todo: we need to handle unary minus!
 precedence = (
     ('left', 'COMMA'),
+    ('left', 'COLON'),
     ('left', 'EQUAL'),
     ('left', 'OR'),
     ('left', 'AND'),
-    ('left', 'NE', 'DBLEQUAL'),
+    ('left', 'NE', 'DBLEQUAL', 'IN'),
     ('left', 'GT', 'GTE', 'LT', 'LTE'),
     ('left', 'SUM', 'SUBTRACT'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
@@ -138,6 +139,7 @@ def p_expression_comparison(p):
                | expression GTE expression
                | expression DBLEQUAL expression
                | expression NE expression
+               | expression IN expression
     """
     p[0] = Comparison(first=p[1], operator=p[2], second=p[3])
 
@@ -349,6 +351,7 @@ def p_base_type(p):
               | number
               | boolean
               | map
+              | list
               | NULL
     """
     p[0] = p[1]
@@ -387,17 +390,75 @@ def p_string(p):
     p[0] = p[1][1:-1]  # todo: replace escapes
 
 
-def p_map_empty(p):
-    """map : LBRACE RBRACE"""
-    p[0] = Map()
-
+##----------------------------------------------------------------------------
+## Maps
+## { key = value, otherkey = othervalue }
+## { key : value, otherkey : othervalue }
+##----------------------------------------------------------------------------
 
 def p_map(p):
     """
-    map : LBRACE assignment_list RBRACE
-        | LBRACE assignment_list COMMA RBRACE
+    map : assignment_map
+        | json_map
+    """
+    p[0] = p[1]
+
+
+def p_map_empty(p):
+    """map : LBRACE RBRACE"""
+    p[0] = Map()  # This is just a dict with a .to_mongo() method
+
+
+def p_assignment_map(p):
+    """
+    assignment_map : LBRACE assignment_list RBRACE
+                   | LBRACE assignment_list COMMA RBRACE
     """
     p[0] = Map((i.name, i.expression) for i in p[2])
+
+
+def p_json_map_item(p):
+    """
+    json_map_item : SYMBOL COLON expression
+                  | string COLON expression
+    """
+    p[0] = (p[1], p[3])
+
+
+def p_json_map(p):
+    """
+    json_map : LBRACE json_map_item_list RBRACE
+             | LBRACE json_map_item_list COMMA RBRACE
+    """
+    p[0] = Map(p[2])
+
+
+def p_json_map_item_list_one(p):
+    """json_map_item_list : json_map_item"""
+    p[0] = [p[1]]
+
+
+# def p_json_map_item_list(p):
+#     """json_map_item_list : json_map_item_list COMMA json_map_item"""
+#     p[0] = p[1]
+#     p[0].append(p[3])
+
+
+##----------------------------------------------------------------------------
+## Lists
+##----------------------------------------------------------------------------
+
+def p_list_empty(p):
+    """list : LBRACKET RBRACKET"""
+    p[0] = []
+
+
+def p_list(p):
+    """
+    list : LBRACKET expression_list RBRACKET
+         | LBRACKET expression_list COMMA RBRACKET
+    """
+    p[0] = p[2]
 
 
 debug = True if os.environ.get('MONGOSQL_DEBUG') else False

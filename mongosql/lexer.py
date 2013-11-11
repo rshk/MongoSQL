@@ -32,7 +32,7 @@ token_symbols = [
     ('LPAREN', '('),
     ('RPAREN', ')'),
 
-    #('COLON', ':'),  # for stuff -> which stuff??
+    ('COLON', ':'),  # used in json maps
     ('SEMICOLON', ';'),  # terminator
     ('COMMA', ','),  # separator
     ('DBLEQUAL', '=='),  # equality

@@ -149,6 +149,7 @@ class Comparison(OperationBase):
         '>=': '$gte',
         '==': '$eq',
         '!=': '$ne',
+        'IN': '$in',
     }
 
     def to_mongo(self):
