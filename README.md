@@ -22,15 +22,14 @@ for item in 'World Spam Eggs Bacon Spam Spam Spam'.split():
 Then, we'll create a query:
 
 ```python
-from mongosql import parse
+>>> from mongosql import parse
 
-q = parse('SELECT * FROM mycollection')
-data = q.apply(db)
+>>> q = parse('SELECT * FROM mycollection')
+>>> data = q.apply(db)
 
-for item in data:
-	print item
-```
-```
+>>> for item in data:
+...     print item
+
 {u'_id': ObjectId('00112233445566778899AA00'), u'hello': u'Hello, World'}
 {u'_id': ObjectId('00112233445566778899AA01'), u'hello': u'Hello, Spam'}
 {u'_id': ObjectId('00112233445566778899AA02'), u'hello': u'Hello, Eggs'}
@@ -77,7 +76,9 @@ db['mycollection'].find(
 ```
 
 
-## Example: projection framework
+## Example: aggregation framework
+
+(Only projections supported at the moment, more coming soon)
 
 ```sql
 AGGREGATE article
