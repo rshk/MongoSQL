@@ -69,6 +69,10 @@ def p_statement(p):
     p[0] = p[1]
 
 
+def p_statement_semicolon(p):
+    """statement : statement SEMICOLON"""
+
+
 def p_operation(p):
     """
     operation : operation_select

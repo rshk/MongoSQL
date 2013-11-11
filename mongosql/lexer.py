@@ -50,10 +50,7 @@ token_symbols = [
 ]
 
 
-globs = globals()
-for tk, tkval in token_symbols:
-    tokens.append(tk)
-    globs['t_' + tk] = re.escape(tkval)
+tokens.extend(x[0] for x in token_symbols)
 
 
 reserved = [
@@ -90,10 +87,15 @@ reserved = [
     'GEO_NEAR',
 ]
 
-tokens += reserved
+tokens.extend(reserved)
+
 
 ## Whitespace gets ignored
 t_ignore = " \t"
+
+
+class LexerError(Exception):
+    pass
 
 
 def t_newline(t):
@@ -102,13 +104,27 @@ def t_newline(t):
 
 
 def t_error(t):
-    raise TypeError("Unknown text {0!r}".format(t.value,))
+    raise LexerError("Unknown text {0!r}".format(t.value,))
 
 
+comment_cpp = r'//.*'
+comment_python = r'\#.*'
+comment_sql = r'--.*'
+comment_c = r'/\*(.|\n)*?\*/'
+
+
+@lex.TOKEN('|'.join((comment_cpp, comment_python, comment_sql, comment_c)))
 def t_COMMENT(t):
-    r'(--|\#|//).*'  # We accept sql-style, python-style an c++-style comments
     # todo: how to support c-style multiline /* comments */ ?
     return None  # Just skip this token
+
+
+## We need to do this *after* declaring t_COMMENT
+## order matters in the lexer module...
+globs = globals()
+for tk, tkval in token_symbols:
+    globs['t_' + tk] = re.escape(tkval)
+
 
 ##------------------------------------------------------------
 ## Simple tokens
