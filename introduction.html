@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; MongoSQL 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MongoSQL 0.1 documentation" href="index.html" />
+    <link rel="next" title="Base syntax" href="base-syntax.html" />
+    <link rel="prev" title="Welcome to MongoSQL’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="base-syntax.html" title="Base syntax"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to MongoSQL’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="reasons-behind-this">
+<h2>Reasons behind this<a class="headerlink" href="#reasons-behind-this" title="Permalink to this headline">¶</a></h2>
+<p>The reasons behind this project are:</p>
+<ul>
+<li><p class="first">Many times I need to run test queries on a MongoDB server, eg. to see
+the status of the stored data, often with some aggregations / &#8220;GROUP BY&#8221;.
+And I hate having to write JSON inline in the CLI, with all the
+(un)readability problems..</p>
+</li>
+<li><p class="first">In any case, I find that JSON queries tend to become unreadable quite soon,
+even in program code.</p>
+<p>And I hate writing things like: <tt class="docutils literal"><span class="pre">{'$and':</span> <span class="pre">[cond1,</span> <span class="pre">cond2,</span> <span class="pre">...]}</span></tt>.</p>
+<p>And I think that <a class="reference external" href="http://en.wikipedia.org/wiki/Polish_notation">polish notation</a> tends to become
+hard to follow quickly: compare, for example, <tt class="docutils literal"><span class="pre">(5</span> <span class="pre">-</span> <span class="pre">6)</span> <span class="pre">*</span> <span class="pre">7</span></tt>
+with <tt class="docutils literal"><span class="pre">*</span> <span class="pre">-</span> <span class="pre">5</span> <span class="pre">6</span> <span class="pre">7</span></tt> (polish notation), <tt class="docutils literal"><span class="pre">(*</span> <span class="pre">(-</span> <span class="pre">5</span> <span class="pre">6)</span> <span class="pre">7)</span></tt> (lisp)
+or, worse of them all, the mongodb way:
+<tt class="docutils literal"><span class="pre">{'$multiply':</span> <span class="pre">[{'$subtract':</span> <span class="pre">[5,</span> <span class="pre">6]},</span> <span class="pre">7]}</span></tt>...</p>
+</li>
+</ul>
+</div>
+<div class="section" id="reasons-not-behind-this">
+<h2>Reasons NOT behind this<a class="headerlink" href="#reasons-not-behind-this" title="Permalink to this headline">¶</a></h2>
+<p>The goal of this project is <strong>not</strong> to use MongoDB as a drop-in, web-scale
+replacement for MySQL, to make your cats blog run the speed of light!</p>
+</div>
+<div class="section" id="example-usage">
+<h2>Example usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
+<p>Everyone likes examples! All right then..</p>
+<p>First, let&#8217;s connect to our MongoDB server:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mongosql</span> <span class="kn">import</span> <span class="n">MongoSqlClient</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">MongoSqlClient</span><span class="p">(</span><span class="s">&#39;mongodb://localhost:27017&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, we&#8217;ll populate the database a bit, using the
+standard MongoDB way (<tt class="docutils literal"><span class="pre">MongoSqlClient</span></tt> extends <tt class="docutils literal"><span class="pre">pymongo.MongoClient</span></tt>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">my_test_db</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="s">&#39;World Spam Eggs Bacon Spam Spam Spam&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">mycollection</span><span class="o">.</span><span class="n">save</span><span class="p">({</span><span class="s">&#39;hello&#39;</span><span class="p">:</span> <span class="s">&#39;Hello, {name}!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">item</span><span class="p">)})</span>
+</pre></div>
+</div>
+<p>Ok, it&#8217;s time for our first SQL-based query to MongoDB!</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;SELECT * FROM mycollection WHERE hello == &quot;Hello, Spam!&quot;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you inspect the contents of result, you&#8217;ll see it worked!</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">u&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&#39;....01&#39;</span><span class="p">),</span> <span class="s">u&#39;hello&#39;</span><span class="p">:</span> <span class="s">u&#39;Hello, Spam&#39;</span><span class="p">}</span>
+<span class="p">{</span><span class="s">u&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&#39;....04&#39;</span><span class="p">),</span> <span class="s">u&#39;hello&#39;</span><span class="p">:</span> <span class="s">u&#39;Hello, Spam&#39;</span><span class="p">}</span>
+<span class="p">{</span><span class="s">u&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&#39;....05&#39;</span><span class="p">),</span> <span class="s">u&#39;hello&#39;</span><span class="p">:</span> <span class="s">u&#39;Hello, Spam&#39;</span><span class="p">}</span>
+<span class="p">{</span><span class="s">u&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&#39;....06&#39;</span><span class="p">),</span> <span class="s">u&#39;hello&#39;</span><span class="p">:</span> <span class="s">u&#39;Hello, Spam&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Now, experiment with more complex queries. Some examples:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">field</span> <span class="pre">==</span> <span class="pre">&quot;value&quot;</span> <span class="pre">AND</span> <span class="pre">other</span> <span class="pre">==</span> <span class="pre">&quot;value2&quot;</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">field</span> <span class="pre">in</span> <span class="pre">['foo',</span> <span class="pre">'bar']</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">price</span> <span class="pre">&lt;</span> <span class="pre">10</span> <span class="pre">OR</span> <span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">100</span></tt></li>
+</ul>
+<p>(Quite likely, you&#8217;ll experience issues at a certain point.
+Please feel free to <a class="reference external" href="https://github.com/rshk/MongoSQL/issues">report issues</a>
+to help speeding up the development!)</p>
+</div>
+</div>
+
+
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = "mongosqldocs";
+        var disqus_identifier = "introduction";
+	var disqus_title = "MongoSQL 0.1 documentation";
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0])
+            .appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the
+      <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+    <a href="http://disqus.com" class="dsq-brlink">
+      comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#reasons-behind-this">Reasons behind this</a></li>
+<li><a class="reference internal" href="#reasons-not-behind-this">Reasons NOT behind this</a></li>
+<li><a class="reference internal" href="#example-usage">Example usage</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to MongoSQL&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="base-syntax.html"
+                        title="next chapter">Base syntax</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<a href="https://github.com/rshk/MongoSQL"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="base-syntax.html" title="Base syntax"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to MongoSQL’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Samuele Santi.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

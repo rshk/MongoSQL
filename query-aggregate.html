@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>AGGREGATE queries &mdash; MongoSQL 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MongoSQL 0.1 documentation" href="index.html" />
+    <link rel="prev" title="SELECT queries" href="query-select.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="query-select.html" title="SELECT queries"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+
+  <div class="section" id="aggregate-queries">
+<h1>AGGREGATE queries<a class="headerlink" href="#aggregate-queries" title="Permalink to this headline">¶</a></h1>
+<p>The <tt class="docutils literal"><span class="pre">AGGREGATE</span></tt> query is used for performing <tt class="docutils literal"><span class="pre">aggregate()</span></tt> operations,
+via the <a class="reference external" href="http://docs.mongodb.org/manual/aggregation/">aggregation framework</a>.</p>
+<p>The base syntax is:  <tt class="docutils literal"><span class="pre">AGGREGATE</span> <span class="pre">&lt;collection&gt;</span></tt>. The remaining part will be used
+to build the aggregation pipeline.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>This part is still very work-in-progress and things described
+below may not corespond to the actual state of the project.</p>
+<p class="last">Anyways, tests are being written in order to make things work
+this way.</p>
+</div>
+<div class="section" id="the-project-command">
+<h2>The <tt class="docutils literal"><span class="pre">PROJECT</span></tt> command<a class="headerlink" href="#the-project-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">PROJECT</span> <span class="pre">&lt;assignment-list&gt;</span></tt></p>
+<p>The <tt class="docutils literal"><span class="pre">PROJECT</span></tt> command allows an &#8220;assignment list&#8221;, eg. a comma-separated list
+of <tt class="docutils literal"><span class="pre">SYMBOL</span> <span class="pre">=</span> <span class="pre">expression</span></tt> items, that will be used to build the map in the <tt class="docutils literal"><span class="pre">$project</span></tt>
+command.</p>
+<p>Example:</p>
+<div class="highlight-sql"><pre>AGGREGATE article
+PROJECT title = 1,
+        stats = {
+            pv = '$pageViews',
+            foo = '$other.foo',
+            dpv = '$pageViews' + 10,
+        }</pre>
+</div>
+<p>results in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">.</span><span class="n">article</span><span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s">&#39;stats&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;pv&#39;</span><span class="p">:</span> <span class="s">&quot;$pageViews&quot;</span><span class="p">,</span>
+        <span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&quot;$other.foo&quot;</span><span class="p">,</span>
+        <span class="s">&#39;dpv&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;$add&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;$pageViews&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">]}</span>
+    <span class="p">},</span>
+<span class="p">}})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-match-command">
+<h2>The <tt class="docutils literal"><span class="pre">MATCH</span></tt> command<a class="headerlink" href="#the-match-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">MATCH</span> <span class="pre">&lt;assignment-list&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$match':</span> <span class="pre">...}</span></tt></p>
+</div>
+<div class="section" id="the-limit-command">
+<h2>The <tt class="docutils literal"><span class="pre">LIMIT</span></tt> command<a class="headerlink" href="#the-limit-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">LIMIT</span> <span class="pre">&lt;num:int&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$skip':</span> <span class="pre">num}</span></tt></p>
+</div>
+<div class="section" id="the-skip-command">
+<h2>The <tt class="docutils literal"><span class="pre">SKIP</span></tt> command<a class="headerlink" href="#the-skip-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">SKIP</span> <span class="pre">&lt;num:int&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$skip':</span> <span class="pre">num}</span></tt></p>
+</div>
+<div class="section" id="the-unwind-command">
+<h2>The <tt class="docutils literal"><span class="pre">UNWIND</span></tt> command<a class="headerlink" href="#the-unwind-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">UNWIND</span> <span class="pre">&lt;name:symbol|string&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$unwind':</span> <span class="pre">name}</span></tt></p>
+</div>
+<div class="section" id="the-group-command">
+<h2>The <tt class="docutils literal"><span class="pre">GROUP</span></tt> command<a class="headerlink" href="#the-group-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">GROUP</span> <span class="pre">[</span> <span class="pre">BY</span> <span class="pre">&lt;expression&gt;</span> <span class="pre">,</span> <span class="pre">]</span> <span class="pre">&lt;assignment-list&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$group':</span> <span class="pre">assignment_list}</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">BY</span> <span class="pre">&lt;expression&gt;</span></tt> part is present, a key named <tt class="docutils literal"><span class="pre">_id</span></tt>
+will be added to the assignment list before using as argument
+to <tt class="docutils literal"><span class="pre">$group</span></tt>.</p>
+</div>
+<div class="section" id="the-sort-command">
+<h2>The <tt class="docutils literal"><span class="pre">SORT</span></tt> command<a class="headerlink" href="#the-sort-command" title="Permalink to this headline">¶</a></h2>
+<p>Syntax: <tt class="docutils literal"><span class="pre">SELECT</span> <span class="pre">&lt;sort-spec&gt;</span></tt></p>
+<p>Results in: <tt class="docutils literal"><span class="pre">{'$sort':</span> <span class="pre">sort_spec}</span></tt>.</p>
+<p>Same as in the <tt class="docutils literal"><span class="pre">SELECT</span></tt> query: a list of <tt class="docutils literal"><span class="pre">&lt;field&gt;</span> <span class="pre">&lt;direction&gt;</span></tt>
+items will be converted in a list of <tt class="docutils literal"><span class="pre">(field,</span> <span class="pre">direction)</span></tt> tuples.</p>
+<p>Supported directions are <tt class="docutils literal"><span class="pre">ASC</span></tt> and <tt class="docutils literal"><span class="pre">DESC</span></tt>.</p>
+</div>
+<div class="section" id="the-geo-near-command">
+<h2>The <tt class="docutils literal"><span class="pre">GEO_NEAR</span></tt> command<a class="headerlink" href="#the-geo-near-command" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = "mongosqldocs";
+        var disqus_identifier = "query-aggregate";
+	var disqus_title = "MongoSQL 0.1 documentation";
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0])
+            .appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the
+      <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+    <a href="http://disqus.com" class="dsq-brlink">
+      comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">AGGREGATE queries</a><ul>
+<li><a class="reference internal" href="#the-project-command">The <tt class="docutils literal"><span class="pre">PROJECT</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-match-command">The <tt class="docutils literal"><span class="pre">MATCH</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-limit-command">The <tt class="docutils literal"><span class="pre">LIMIT</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-skip-command">The <tt class="docutils literal"><span class="pre">SKIP</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-unwind-command">The <tt class="docutils literal"><span class="pre">UNWIND</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-group-command">The <tt class="docutils literal"><span class="pre">GROUP</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-sort-command">The <tt class="docutils literal"><span class="pre">SORT</span></tt> command</a></li>
+<li><a class="reference internal" href="#the-geo-near-command">The <tt class="docutils literal"><span class="pre">GEO_NEAR</span></tt> command</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="query-select.html"
+                        title="previous chapter">SELECT queries</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/query-aggregate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<a href="https://github.com/rshk/MongoSQL"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="query-select.html" title="SELECT queries"
+             >previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Samuele Santi.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

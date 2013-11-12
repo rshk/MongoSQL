@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Base syntax &mdash; MongoSQL 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MongoSQL 0.1 documentation" href="index.html" />
+    <link rel="next" title="SELECT queries" href="query-select.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="query-select.html" title="SELECT queries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+
+  <div class="section" id="base-syntax">
+<h1>Base syntax<a class="headerlink" href="#base-syntax" title="Permalink to this headline">¶</a></h1>
+<p>The syntax of MongoSQL queries is similar to standard SQL, but uses some
+MongoDB-specific additions / changes.</p>
+<p>For example, names of keywords tend to follow names used in MongoDB
+DSL instead of standard SQL (but, usually, SQL commands are supported as well).</p>
+<div class="section" id="base-types">
+<h2>Base types<a class="headerlink" href="#base-types" title="Permalink to this headline">¶</a></h2>
+<p>This is a description of the &#8220;base types&#8221; used by MongoSQL.
+They are a mix between SQL and JSON objects.</p>
+<div class="section" id="strings">
+<h3>Strings<a class="headerlink" href="#strings" title="Permalink to this headline">¶</a></h3>
+<p>Strings can be single-quoted or double-quoted; they can contain C-style
+escapes (<tt class="docutils literal"><span class="pre">\a</span></tt>, <tt class="docutils literal"><span class="pre">\b</span></tt>, <tt class="docutils literal"><span class="pre">\f</span></tt>, <tt class="docutils literal"><span class="pre">\n</span></tt>, <tt class="docutils literal"><span class="pre">\r</span></tt>, <tt class="docutils literal"><span class="pre">\t</span></tt>, <tt class="docutils literal"><span class="pre">\v</span></tt>) and
+hexadecimal escapes (<tt class="docutils literal"><span class="pre">\x##</span></tt>).</p>
+</div>
+<div class="section" id="integers">
+<h3>Integers<a class="headerlink" href="#integers" title="Permalink to this headline">¶</a></h3>
+<p>Integers follow the usual syntax <tt class="docutils literal"><span class="pre">[0-9]+</span></tt>. Stuff like scientific notation,
+hexadecimal numbers, etc. is not supported yet (but might be in the future).</p>
+</div>
+<div class="section" id="floats">
+<h3>Floats<a class="headerlink" href="#floats" title="Permalink to this headline">¶</a></h3>
+<p>Floating point numbers follow the <tt class="docutils literal"><span class="pre">[0-9]+\.[0-9]+</span></tt> syntax. Things like
+<tt class="docutils literal"><span class="pre">1.</span></tt> and <tt class="docutils literal"><span class="pre">.05</span></tt> are not supported since they can be misread and confusing.</p>
+</div>
+<div class="section" id="boolean">
+<h3>Boolean<a class="headerlink" href="#boolean" title="Permalink to this headline">¶</a></h3>
+<p>Booleans are represented using the <tt class="docutils literal"><span class="pre">TRUE</span></tt> and <tt class="docutils literal"><span class="pre">FALSE</span></tt> keywords.</p>
+</div>
+<div class="section" id="null-type">
+<h3>Null type<a class="headerlink" href="#null-type" title="Permalink to this headline">¶</a></h3>
+<p>The NULL type is just <tt class="docutils literal"><span class="pre">NULL</span></tt>.</p>
+</div>
+<div class="section" id="symbol">
+<h3>Symbol<a class="headerlink" href="#symbol" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;symbol&#8221; (aka &#8220;ID&#8221;) is just and identifier, which may be composed of
+multiple dot-separated parts, matching <tt class="docutils literal"><span class="pre">[a-zA-Z_][a-zA-Z0-9_]*</span></tt>.
+The dollar <tt class="docutils literal"><span class="pre">$</span></tt> character might be added in future as well,
+since it&#8217;s used in MongoDB.</p>
+</div>
+<div class="section" id="list">
+<h3>List<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h3>
+<p>Just a list of things. Delimited by brackets <tt class="docutils literal"><span class="pre">[</span></tt> and <tt class="docutils literal"><span class="pre">]</span></tt>, items
+are comma-separated. Supports trailing comma.</p>
+</div>
+<div class="section" id="map">
+<h3>Map<a class="headerlink" href="#map" title="Permalink to this headline">¶</a></h3>
+<p>Maps are associations of <tt class="docutils literal"><span class="pre">(SYMBOL</span> <span class="pre">|</span> <span class="pre">STRING)</span> <span class="pre">:</span> <span class="pre">expression</span></tt>.
+They are delimited by braces (<tt class="docutils literal"><span class="pre">{</span></tt>, <tt class="docutils literal"><span class="pre">}</span></tt>) and items can be specified
+in two fashions:</p>
+<ul class="simple">
+<li>Assignment-like: <tt class="docutils literal"><span class="pre">{</span> <span class="pre">one</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">two</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">}</span></tt></li>
+<li>JSON-like: <tt class="docutils literal"><span class="pre">{one:</span> <span class="pre">1,</span> <span class="pre">two:</span> <span class="pre">2}</span></tt></li>
+</ul>
+<p>Trailing comma is suported as well.</p>
+</div>
+</div>
+<div class="section" id="operators">
+<h2>Operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h2>
+<p>Operators and precedence rules come mostly from C and Python.</p>
+<p>We prefer literal names for things like <tt class="docutils literal"><span class="pre">AND</span></tt>, <tt class="docutils literal"><span class="pre">OR</span></tt> and <tt class="docutils literal"><span class="pre">NOT</span></tt>,
+for sake of clarity.</p>
+<div class="section" id="arithmetic">
+<h3>Arithmetic<a class="headerlink" href="#arithmetic" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">+</span></tt> is the operator for sum</li>
+<li><tt class="docutils literal"><span class="pre">-</span></tt> is the operator for subtraction</li>
+<li><tt class="docutils literal"><span class="pre">*</span></tt> is the operator for multiplication</li>
+<li><tt class="docutils literal"><span class="pre">/</span></tt> is the operator for division</li>
+<li><tt class="docutils literal"><span class="pre">%</span></tt> is the operator for modulo</li>
+<li>We support unary <tt class="docutils literal"><span class="pre">-</span></tt> as well, for numbers (eg. <tt class="docutils literal"><span class="pre">-1</span></tt>, <tt class="docutils literal"><span class="pre">-3.14</span></tt>)</li>
+</ul>
+</div>
+<div class="section" id="comparison">
+<h3>Comparison<a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">==</span></tt> is the equality operator (eg. <tt class="docutils literal"><span class="pre">A</span> <span class="pre">==</span> <span class="pre">B</span></tt>)</li>
+<li><tt class="docutils literal"><span class="pre">!=</span></tt> is the inequality operator</li>
+<li><tt class="docutils literal"><span class="pre">&lt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;=</span></tt>, <tt class="docutils literal"><span class="pre">&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&gt;=</span></tt> have the same meaning in C</li>
+<li><tt class="docutils literal"><span class="pre">IN</span></tt> is the containment operator (eg. <tt class="docutils literal"><span class="pre">item</span> <span class="pre">IN</span> <span class="pre">list</span></tt>)</li>
+</ul>
+</div>
+<div class="section" id="logical">
+<h3>Logical<a class="headerlink" href="#logical" title="Permalink to this headline">¶</a></h3>
+<p>We use <tt class="docutils literal"><span class="pre">AND</span></tt>, <tt class="docutils literal"><span class="pre">OR</span></tt> and <tt class="docutils literal"><span class="pre">NOT</span></tt> for their usual meaning.</p>
+</div>
+<div class="section" id="precedence">
+<h3>Precedence<a class="headerlink" href="#precedence" title="Permalink to this headline">¶</a></h3>
+<p>See <tt class="docutils literal"><span class="pre">man</span> <span class="pre">operator</span></tt>, it&#8217;s copied from C.
+You can override precedence using parenthesis (<tt class="docutils literal"><span class="pre">(</span></tt>, <tt class="docutils literal"><span class="pre">)</span></tt>)</p>
+</div>
+</div>
+</div>
+
+
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = "mongosqldocs";
+        var disqus_identifier = "base-syntax";
+	var disqus_title = "MongoSQL 0.1 documentation";
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0])
+            .appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the
+      <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+    <a href="http://disqus.com" class="dsq-brlink">
+      comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Base syntax</a><ul>
+<li><a class="reference internal" href="#base-types">Base types</a><ul>
+<li><a class="reference internal" href="#strings">Strings</a></li>
+<li><a class="reference internal" href="#integers">Integers</a></li>
+<li><a class="reference internal" href="#floats">Floats</a></li>
+<li><a class="reference internal" href="#boolean">Boolean</a></li>
+<li><a class="reference internal" href="#null-type">Null type</a></li>
+<li><a class="reference internal" href="#symbol">Symbol</a></li>
+<li><a class="reference internal" href="#list">List</a></li>
+<li><a class="reference internal" href="#map">Map</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operators">Operators</a><ul>
+<li><a class="reference internal" href="#arithmetic">Arithmetic</a></li>
+<li><a class="reference internal" href="#comparison">Comparison</a></li>
+<li><a class="reference internal" href="#logical">Logical</a></li>
+<li><a class="reference internal" href="#precedence">Precedence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="query-select.html"
+                        title="next chapter">SELECT queries</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/base-syntax.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<a href="https://github.com/rshk/MongoSQL"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="query-select.html" title="SELECT queries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">MongoSQL 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Samuele Santi.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
