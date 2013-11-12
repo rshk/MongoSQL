@@ -11,6 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   introduction
+   base-syntax
+   query-select
+   query-aggregate
+
 
 
 Indices and tables
