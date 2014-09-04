@@ -144,7 +144,3 @@ The reasons behind this project are:
 
 The goal of this project is **not** to use MongoDB as a drop-in, web-scale
 replacement for MySQL, to make your cats blog run the speed of light!
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/rshk/mongosql/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
